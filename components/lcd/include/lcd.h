@@ -13,7 +13,7 @@ typedef struct{
     int scrollable;
 } MENU_ITEM_STRUCT;
 
-void lcd_write_menu(MENU_ITEM_STRUCT *menu);
+void lcd_write_menu(MENU_ITEM_STRUCT *menu, int menus_in_loop);
 void lcd_init();
 
 #endif

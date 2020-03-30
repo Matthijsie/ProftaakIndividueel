@@ -31,14 +31,9 @@ void lcd_init_task(void * pvParameter)
     smbus_init(smbus_info, i2c_num, address);
     smbus_set_timeout(smbus_info, 1000 / portTICK_RATE_MS);
 
-    // Set up the LCD1602 device with backlight off
+    // Set up the LCD1602 device with backlight on
     lcd_info = i2c_lcd1602_malloc();
     i2c_lcd1602_init(lcd_info, smbus_info, true, LCD_NUM_ROWS, LCD_NUM_COLUMNS, LCD_NUM_VIS_COLUMNS);
-
-    // Turn on backlight
-    ESP_LOGI(TAG, "backlight on");
-    vTaskDelay(1000 / portTICK_RATE_MS);
-    i2c_lcd1602_set_backlight(lcd_info, true);
 
     // Turn cursor visibility off
     ESP_LOGI(TAG, "cursor off");
@@ -48,24 +43,18 @@ void lcd_init_task(void * pvParameter)
 
     //Define custom characters
     ESP_LOGI(TAG, "define characters");
-    uint8_t indoor_icon[8] = {0x4, 0xa, 0x11, 0x1f, 0x11, 0x11, 0x1F}; 
-    uint8_t outdoor_icon[8] = {0x7, 0x1, 0x1D, 0xD, 0x15, 0x1, 0x7};
-    uint8_t degree[8] = {0xC, 0x12, 0x12, 0xC, 0x0, 0x0, 0x0};
     uint8_t not_selected[8] = {0x0, 0x0, 0x6, 0x9, 0x9, 0x6, 0x0}; 
     uint8_t selected[8] = {0x0, 0x0, 0x6, 0xF, 0xF, 0x6, 0x0}; 
 
-    i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_0, degree); 
-    i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_1, indoor_icon);
-    i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_2, outdoor_icon);
-    i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_3, not_selected);
-    i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_4, selected);
+    i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_1, not_selected);
+    i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_2, selected);
  
     // Delete finished task
     vTaskDelete(NULL);
 }
 
 /* Takes a struct pointer and writes the content on the LCD screen */
-void lcd_write_menu(MENU_ITEM_STRUCT *menu)
+void lcd_write_menu(MENU_ITEM_STRUCT *menu, int menus_in_loop)
 {
     ESP_LOGI(TAG, "writing menu");
     i2c_lcd1602_clear(lcd_info);
@@ -91,13 +80,13 @@ void lcd_write_menu(MENU_ITEM_STRUCT *menu)
 
     if (menu->id != 4)  //Dont write the menu bubbles if the menu is not in the navigation loop    
     {
-        i2c_lcd1602_move_cursor(lcd_info, 16, 3);
-        for (int i = 0; i < 4; i++)
+        i2c_lcd1602_move_cursor(lcd_info, 20 - menus_in_loop, 3);
+        for (int i = 0; i < menus_in_loop; i++)
         {
             if(menu->id - i == 0){
-                i2c_lcd1602_write_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_4);    
+                i2c_lcd1602_write_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_2);    
             }  else{
-                i2c_lcd1602_write_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_3);    
+                i2c_lcd1602_write_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_1);    
             }
         }   
     } 
@@ -108,5 +97,5 @@ void lcd_init()
 {
     ESP_LOGI(TAG, "Init LCD");
     xTaskCreate(&lcd_init_task, "lcd1602_task", 3*1024, NULL, 3, NULL);
-    vTaskDelay(1000 / portTICK_RATE_MS); 
+    vTaskDelay(250 / portTICK_RATE_MS); 
 }
