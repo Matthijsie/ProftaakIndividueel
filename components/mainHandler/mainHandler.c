@@ -8,7 +8,6 @@
 // Prototypes
 void mainHandler_init_board(main_handler_t * main_handler);
 void mainHandler_init_wifi(main_handler_t * main_handler);
-void mainHandler_init_semaphore(main_handler_t * main_handler);
 void nvs_init();
 
 /* Initializes the main settings */
@@ -17,7 +16,6 @@ void mainHandler_init(main_handler_t * main_handler)
     nvs_init();
     mainHandler_init_board(main_handler);
     mainHandler_init_wifi(main_handler);
-    mainHandler_init_semaphore(main_handler);
 }
 
 /* Initializes the audio board, esp peripherals, sdcard and keys */ 
@@ -57,12 +55,6 @@ void mainHandler_init_wifi(main_handler_t * main_handler)
     main_handler->wifi_handler = periph_wifi_init(&wifi_cfg);
     esp_periph_start(main_handler->set, main_handler->wifi_handler);
     periph_wifi_wait_for_connected(main_handler->wifi_handler, portMAX_DELAY);
-}
-
-/* Creates a semaphore to make sure main_handler doesnt get written to at the same time from 2 sources */
-void mainHandler_init_semaphore(main_handler_t * main_handler)
-{
-    main_handler->mutex = xSemaphoreCreateMutex();
 }
 
 /* Starts the flash init, needed for wifi */

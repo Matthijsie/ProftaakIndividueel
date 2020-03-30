@@ -57,3 +57,12 @@ void menu_scroll_down()
         
     }
 }
+
+void menu_scroll_up()
+{
+    ESP_LOGI(TAG, "menu_scroll_up");
+    if (menus[menu_state].scrollable == true)   //Check if the current menu is scrollable
+    {
+        
+    }
+}
