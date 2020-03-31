@@ -4,6 +4,7 @@
 #include "i2c-lcd1602.h"
 #include "lcd.h"
 #include "smbus.h"
+#include <math.h>
 
 #define TAG "lcd"
 
@@ -34,22 +35,26 @@ void lcd_init_task(void * pvParameter)
     // Set up the LCD1602 device with backlight on
     lcd_info = i2c_lcd1602_malloc();
     i2c_lcd1602_init(lcd_info, smbus_info, true, LCD_NUM_ROWS, LCD_NUM_COLUMNS, LCD_NUM_VIS_COLUMNS);
+    vTaskDelay(100 / portTICK_RATE_MS);
 
     // Turn cursor visibility off
     ESP_LOGI(TAG, "cursor off");
-    vTaskDelay(1000 / portTICK_RATE_MS);
     i2c_lcd1602_set_cursor(lcd_info, false);
     i2c_lcd1602_set_blink(lcd_info, false);
 
     //Define custom characters
     ESP_LOGI(TAG, "define characters");
-    uint8_t not_selected[8] = {0x0, 0x0, 0x6, 0x9, 0x9, 0x6, 0x0}; 
-    uint8_t selected[8] = {0x0, 0x0, 0x6, 0xF, 0xF, 0x6, 0x0}; 
+    uint8_t floor[8] = {0x1F, 0x1F, 0x14, 0x9, 0x12, 0x5, 0xA, 0x14};
+    uint8_t not_selected[8] = {0x0, 0x0, 0x6, 0x9, 0x9, 0x6, 0x0, 0x0}; 
+    uint8_t selected[8] = {0x0, 0x0, 0x6, 0xF, 0xF, 0x6, 0x0, 0x0}; 
     uint8_t player[8] = {0x4, 0xA, 0x4, 0x1F, 0x4, 0x4, 0xA, 0xA};
+    uint8_t cactus[8] = {0x0, 0x4, 0x1E, 0xF, 0x1E, 0xF, 0x1E, 0xE};
 
+    i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_0, floor);
     i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_1, not_selected);
     i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_2, selected);
     i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_3, player);
+    i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_4, cactus);
  
     // Delete finished task
     vTaskDelete(NULL);
@@ -97,20 +102,30 @@ void lcd_write_menu(MENU_ITEM_STRUCT *menu, int menus_in_loop)
 /* Takes a game object item and writes this onto the LCD screen */
 void lcd_write_game(Game_Info *game_info)
 {
+    ESP_LOGI(TAG, "Writing Game");
     i2c_lcd1602_clear(lcd_info);
 
     //Write player
     i2c_lcd1602_move_cursor(lcd_info, game_info->player_location.x, game_info->player_location.y);
     i2c_lcd1602_write_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_3);
 
+    //Write obstacle
+    i2c_lcd1602_move_cursor(lcd_info, game_info->obstacle.x, game_info->obstacle.y);
+    i2c_lcd1602_write_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_4);
+
     //Write floor
     i2c_lcd1602_move_cursor(lcd_info, 0, 3);
     for (size_t i = 0; i < LCD_NUM_VIS_COLUMNS; i++)
     {
-        i2c_lcd1602_write_char(lcd_info, I2C_LCD1602_CHARACTER_BLOCK);
-    }  
-}
+        i2c_lcd1602_write_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_0);
+    }
 
+    //Write score
+    char strbuffer[LCD_NUM_VIS_COLUMNS]; 
+    sprintf(strbuffer, "Score: %i", game_info->current_score);
+    i2c_lcd1602_move_cursor(lcd_info, 0, 0);
+    i2c_lcd1602_write_string(lcd_info, strbuffer);  
+}
 
 /* Creates a thread to initliazize the LCD in parallel */
 void lcd_init()

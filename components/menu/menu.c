@@ -18,7 +18,7 @@ int menu_state;
 int scroll_state;
 
 char *game_menu[MENU_MAIN_1_ITEMS] = {"Start","Reset Highscores", "Quit"};
-char *highscore_menu[MAX_HIGHSCORE_SLOTS] = {"<Empty>", "<Example>", "<Empty>", "<Empty>", "<Empty>"};
+char *highscore_menu[MAX_HIGHSCORE_SLOTS] = {"<Empty>", "<Empty>", "<Empty>", "<Empty>", "<Empty>"};
 
 MENU_ITEM_STRUCT menus[] = 
 {
@@ -67,6 +67,11 @@ void menu_next()
     menu_state = menus[menu_state].nextid;
     scroll_state = 0;
     lcd_write_menu(&menus[menu_state], MAIN_MENU_AMOUNT);
+}
+
+void menu_add_highscore(int score)
+{
+    
 }
 
 void menu_scroll_down()
