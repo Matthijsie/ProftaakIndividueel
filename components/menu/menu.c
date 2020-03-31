@@ -2,6 +2,7 @@
 #include "menu.h"
 #include "esp_log.h"
 #include <string.h>
+#include "game.h"
 
 #define TAG "menu"
 #define MENU_MAIN_1 0
@@ -115,16 +116,17 @@ void menu_scroll_up()
 
 void menu_select_item()
 {
+    int arr_size;
     switch (scroll_state)
     {
     case 0:
-        game_start();
+        game_is_running ? : game_start();
         break;
     case 1:
-        int arr_size = (sizeof(game_menu) / sizeof(game_menu[0]));  //Calculate Array size
+        arr_size = (sizeof(game_menu) / sizeof(game_menu[0]));  //Calculate Array size
         for (size_t i = 0; i < arr_size; i++)
         {
-            strcpy(highscore_mene[i], "<empty>");
+            strcpy(highscore_menu[i], "<empty>");
         }
         break;
     case 2:

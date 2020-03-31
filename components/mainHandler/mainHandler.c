@@ -15,7 +15,7 @@ void mainHandler_init(main_handler_t * main_handler)
 {
     nvs_init();
     mainHandler_init_board(main_handler);
-    mainHandler_init_wifi(main_handler);
+    //mainHandler_init_wifi(main_handler);
 }
 
 /* Initializes the audio board, esp peripherals, sdcard and keys */ 

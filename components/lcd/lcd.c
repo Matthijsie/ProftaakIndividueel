@@ -45,9 +45,11 @@ void lcd_init_task(void * pvParameter)
     ESP_LOGI(TAG, "define characters");
     uint8_t not_selected[8] = {0x0, 0x0, 0x6, 0x9, 0x9, 0x6, 0x0}; 
     uint8_t selected[8] = {0x0, 0x0, 0x6, 0xF, 0xF, 0x6, 0x0}; 
+    uint8_t player[8] = {0x4, 0xA, 0x4, 0x1F, 0x4, 0x4, 0xA, 0xA};
 
     i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_1, not_selected);
     i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_2, selected);
+    i2c_lcd1602_define_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_3, player);
  
     // Delete finished task
     vTaskDelete(NULL);
@@ -91,6 +93,24 @@ void lcd_write_menu(MENU_ITEM_STRUCT *menu, int menus_in_loop)
         }   
     } 
 }
+
+/* Takes a game object item and writes this onto the LCD screen */
+void lcd_write_game(Game_Info *game_info)
+{
+    i2c_lcd1602_clear(lcd_info);
+
+    //Write player
+    i2c_lcd1602_move_cursor(lcd_info, game_info->player_location.x, game_info->player_location.y);
+    i2c_lcd1602_write_char(lcd_info, I2C_LCD1602_CHARACTER_CUSTOM_3);
+
+    //Write floor
+    i2c_lcd1602_move_cursor(lcd_info, 0, 3);
+    for (size_t i = 0; i < LCD_NUM_VIS_COLUMNS; i++)
+    {
+        i2c_lcd1602_write_char(lcd_info, I2C_LCD1602_CHARACTER_BLOCK);
+    }  
+}
+
 
 /* Creates a thread to initliazize the LCD in parallel */
 void lcd_init()
