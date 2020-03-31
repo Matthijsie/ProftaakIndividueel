@@ -24,6 +24,7 @@ static esp_err_t input_key_service_cb(periph_service_handle_t handle, periph_ser
                 break;
             case 3:             //play bttn
                 ESP_LOGI(TAG, "[ * ] PLAY BUTTON PRESSED");
+                menu_select_item();
                 break;     
             case 4:           //mode bttn
                 ESP_LOGI(TAG, "[ * ] MODE BUTTON PRESSED");
