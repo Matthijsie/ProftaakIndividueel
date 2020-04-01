@@ -7,13 +7,13 @@
 
 void app_main()
 {
+    //Initialize main components
 	main_handler_t main_handler;
     mainHandler_init(&main_handler);
-    buttonHandler_init(&main_handler);
-    menu_init();
 
-    while(1)
-    {
-        vTaskDelay(60 * 1000 / portTICK_RATE_MS);
-    }
+    //Initialize the buttons
+    buttonHandler_init(&main_handler);
+    
+    //Initialize the menu
+    menu_init();
 }

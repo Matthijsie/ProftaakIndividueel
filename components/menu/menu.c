@@ -6,21 +6,23 @@
 #include <stdio.h> 
 
 #define TAG "menu"
-#define MENU_MAIN_1 0
-#define MENU_MAIN_2 1
-#define MENU_EXPLANATION 2
-#define MAIN_MENU_AMOUNT 2
+#define MENU_MAIN_1 0               ///< Main menu
+#define MENU_MAIN_2 1               ///< Score list
+#define MENU_EXPLANATION 2          ///< Explanation Menu
+#define MAIN_MENU_AMOUNT 2          ///< The amount of menus in the main menu loop
 
-#define MAX_HIGHSCORE_SLOTS 5
-#define MAX_ITEMS_MENU_MAIN_1 3
-#define MAX_STRING_LENGTH 20
+#define MAX_HIGHSCORE_SLOTS 5       ///< Maximum amount of highscores that can be saved
+#define MAX_ITEMS_MENU_MAIN_1 3     ///< Amount of items in the main menu
+#define MAX_STRING_LENGTH 20        ///< The maximum string length of any item in menus
 
-int menu_state;
-int scroll_state;
+//Attributes
+int menu_state;                     ///< Tracks which menu is currently visible
+int scroll_state;                   ///< Tracks which position the currently visible menu is in
 
 char game_menu[MAX_ITEMS_MENU_MAIN_1][MAX_STRING_LENGTH] = {"Start","Reset Highscores", "Explanation"};
-char score[MAX_HIGHSCORE_SLOTS][MAX_STRING_LENGTH] = {"<Empty>", "<Empty>", "<Empty>", "<Empty>", "<Empty>"};
+char scores[MAX_HIGHSCORE_SLOTS][MAX_STRING_LENGTH] = {"<Empty>", "<Empty>", "<Empty>", "<Empty>", "<Empty>"};
 
+// Struct with all the menus
 MENU_ITEM_STRUCT menus[] = 
 {
     //id, nextid, name, line1, line2, line3, scrollable
@@ -56,18 +58,24 @@ MENU_ITEM_STRUCT menus[] =
 void menu_init()
 {
     ESP_LOGI(TAG, "menu_init");
+
+    //Initialise LCD
     lcd_init();
+
+    //Initialise attributes
     menu_state = 0;
     scroll_state = 0;
 
+    //Fill menu lists
     strcpy(menus[MENU_MAIN_1].line1, game_menu[0]);
     strcpy(menus[MENU_MAIN_1].line2, game_menu[1]);
     strcpy(menus[MENU_MAIN_1].line3, game_menu[2]);
 
-    strcpy(menus[MENU_MAIN_2].line1, score[0]);
-    strcpy(menus[MENU_MAIN_2].line2, score[1]);
-    strcpy(menus[MENU_MAIN_2].line3, score[2]);
+    strcpy(menus[MENU_MAIN_2].line1, scores[0]);
+    strcpy(menus[MENU_MAIN_2].line2, scores[1]);
+    strcpy(menus[MENU_MAIN_2].line3, scores[2]);
 
+    //Write the first menu on the LCD
     lcd_write_menu(&menus[menu_state], MAIN_MENU_AMOUNT);
 }
 
@@ -85,16 +93,16 @@ void menu_add_score(int score)
     
     for (int i = 0; i < MAX_HIGHSCORE_SLOTS; i++)
     {
-        if ( strcmp(score[i], "<Empty>") == 0 )
+        if ( strcmp(scores[i], "<Empty>") == 0 )
         {
             char strbuffer[20] = "";
             sprintf(strbuffer, "%i", score);
-            strcpy(score[i], strbuffer);
+            strcpy(scores[i], strbuffer);
 
-            int arr_size = (sizeof(score) / sizeof(score[0]));
-            strcpy(menus[MENU_MAIN_2].line1, score[scroll_state]);
-            strcpy(menus[MENU_MAIN_2].line2, score[(scroll_state + 1) % arr_size]);
-            strcpy(menus[MENU_MAIN_2].line3, score[(scroll_state + 2) % arr_size]);
+            int arr_size = (sizeof(scores) / sizeof(scores[0]));
+            strcpy(menus[MENU_MAIN_2].line1, scores[scroll_state]);
+            strcpy(menus[MENU_MAIN_2].line2, scores[(scroll_state + 1) % arr_size]);
+            strcpy(menus[MENU_MAIN_2].line3, scores[(scroll_state + 2) % arr_size]);
 
             lcd_write_menu(&menus[menu_state], MAIN_MENU_AMOUNT);
             break;
@@ -103,6 +111,14 @@ void menu_add_score(int score)
     }
 }
 
+/**
+ * @brief Helper function used to scroll though the menu, replaces strings in the menu struct
+ * 
+ * @param[in] The list that needs to be scrolled through
+ * @param[in] The size of the list that needs to be scrolled though
+ * @param[in] The amount that needs to be scrolled down, enter a negative value to scroll up'
+ * 
+ */ 
 void menu_scroll_helper(char menu_items[MAX_HIGHSCORE_SLOTS][MAX_STRING_LENGTH], int arr_size, int modifier)
 {
     //Calculate new scroll state
@@ -128,8 +144,8 @@ void menu_scroll_down()
             break;
         
         case MENU_MAIN_2:
-            arr_size = (sizeof(score) / sizeof(score[0]));  //Calculate Array size
-            menu_scroll_helper(score, arr_size, 1);
+            arr_size = (sizeof(scores) / sizeof(scores[0]));  //Calculate Array size
+            menu_scroll_helper(scores, arr_size, 1);
             break;
         }
         lcd_write_menu(&menus[menu_state], MAIN_MENU_AMOUNT);
@@ -150,8 +166,8 @@ void menu_scroll_up()
             break;
         
         case MENU_MAIN_2:
-            arr_size = (sizeof(score) / sizeof(score[0]));  //Calculate Array size
-            menu_scroll_helper(score, arr_size, -1);
+            arr_size = (sizeof(scores) / sizeof(scores[0]));  //Calculate Array size
+            menu_scroll_helper(scores, arr_size, -1);
             break;
         }
 
@@ -173,7 +189,7 @@ void menu_select_item()
             arr_size = (sizeof(game_menu) / sizeof(game_menu[0]));  //Calculate Array size
             for (size_t i = 0; i < arr_size; i++)
             {
-                strcpy(score[i], "<empty>");
+                strcpy(scores[i], "<empty>");
             }
             break;
         case 2:

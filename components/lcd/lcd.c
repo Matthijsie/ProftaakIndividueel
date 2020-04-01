@@ -11,6 +11,7 @@
 // Undefine USE_STDIN if no stdin is available (e.g. no USB UART) - a fixed delay will occur instead of a wait for a keypress.
 #undef USE_STDIN
 
+// General LCD information
 #define I2C_MASTER_NUM           0
 #define LCD_NUM_ROWS			 4
 #define LCD_NUM_COLUMNS			 40
@@ -22,7 +23,6 @@ void lcd_init_task(void * pvParameter);
 // Attributes
 i2c_lcd1602_info_t* lcd_info;
 
-/* Initialize the board */
 void lcd_init_task(void * pvParameter)
 {   
     // Set up the SMBus
@@ -60,7 +60,6 @@ void lcd_init_task(void * pvParameter)
     vTaskDelete(NULL);
 }
 
-/* Takes a struct pointer and writes the content on the LCD screen */
 void lcd_write_menu(MENU_ITEM_STRUCT *menu, int menus_in_loop)
 {
     ESP_LOGI(TAG, "writing menu");
@@ -99,7 +98,6 @@ void lcd_write_menu(MENU_ITEM_STRUCT *menu, int menus_in_loop)
     } 
 }
 
-/* Takes a game object item and writes this onto the LCD screen */
 void lcd_write_game(Game_Info *game_info)
 {
     ESP_LOGI(TAG, "Writing Game");
@@ -127,7 +125,6 @@ void lcd_write_game(Game_Info *game_info)
     i2c_lcd1602_write_string(lcd_info, strbuffer);  
 }
 
-/* Creates a thread to initliazize the LCD in parallel */
 void lcd_init()
 {
     ESP_LOGI(TAG, "Init LCD");

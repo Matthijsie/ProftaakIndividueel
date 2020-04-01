@@ -7,16 +7,16 @@
 #include "menu.h"
 
 #define TAG "game"
-#define GAME_TICKS_PER_SECOND 4
-#define MAX_JUMP_HEIGHT 1
-#define JUMP_TIME_SECONDS 1
-#define OBSTACLE_FREQUENCY_SECONDS 4
+#define GAME_TICKS_PER_SECOND 4         ///< Determines how often the game updates every seconds
+#define MAX_JUMP_HEIGHT 1               ///< How many cells high the player jumps
+#define JUMP_TIME_SECONDS 1             ///< The amount of time the player stays in the air
 
-Game_Info* game_info;
+// Variables
+Game_Info* game_info;                   ///< Pointer to memory adress of game information struct
 
+// Prototypes
 void game_main_task(void* pvParameters);
 
-/* Init all required resources and start the game */
 void game_start()
 {
     ESP_LOGI(TAG, "Initlializing game resources");
@@ -32,18 +32,16 @@ void game_start()
     xTaskCreate(game_main_task, "Game_Task", 3*1024, NULL, 1, NULL);
 }
 
-/* Close game and free all resources*/
 void game_stop()
 {
     game_is_running = false;
     unsigned int score = game_info->current_score;
     ESP_LOGI(TAG, "Game ended with score %d", (int)score);
     free(game_info);
-    menu_add_highscore(score);
+    menu_add_score(score);
     menu_next();
 }
 
-/* make the player jump */
 void game_jump()
 {
     ESP_LOGI(TAG, "Jump");
@@ -52,7 +50,10 @@ void game_jump()
     game_info->player_location.y += MAX_JUMP_HEIGHT;
 }
 
-/* Main game loop */
+/**
+ * @brief Main game loop, updates obstacles, score and checks if the player isn't colloiding with an obstacle
+ * 
+ */ 
 void game_main_task(void* pvParameters)
 {
     game_is_running = true;
