@@ -85,7 +85,7 @@ void lcd_write_menu(MENU_ITEM_STRUCT *menu, int menus_in_loop)
     i2c_lcd1602_move_cursor(lcd_info, 0,3);
     i2c_lcd1602_write_string(lcd_info, menu->menu_name);
 
-    if (menu->id != 4)  //Dont write the menu bubbles if the menu is not in the navigation loop    
+    if (menu->id != -1)  //Dont write the menu bubbles if the menu is not in the navigation loop    
     {
         i2c_lcd1602_move_cursor(lcd_info, 20 - menus_in_loop, 3);
         for (int i = 0; i < menus_in_loop; i++)

@@ -29,8 +29,8 @@ static esp_err_t input_key_service_cb(periph_service_handle_t handle, periph_ser
                 break;     
             case 4:           //mode bttn
                 ESP_LOGI(TAG, "[ * ] MODE BUTTON PRESSED");
-                menu_next();
-                break;   
+                game_is_running ? game_stop() : menu_next();
+                break;  
             case 5:             //vol down
                 ESP_LOGI(TAG, "[ * ] VOL DOWN PRESSED");
                 game_is_running ? game_jump() : menu_scroll_down();

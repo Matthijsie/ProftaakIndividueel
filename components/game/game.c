@@ -33,12 +33,14 @@ void game_start()
 }
 
 /* Close game and free all resources*/
-unsigned int game_stop()
+void game_stop()
 {
     game_is_running = false;
-    unsigned int highscore = game_info->current_score;
+    unsigned int score = game_info->current_score;
+    ESP_LOGI(TAG, "Game ended with score %d", (int)score);
     free(game_info);
-    return highscore;
+    menu_add_highscore(score);
+    menu_next();
 }
 
 /* make the player jump */
@@ -55,27 +57,31 @@ void game_main_task(void* pvParameters)
 {
     game_is_running = true;
 
-    while (game_is_running)
+    do 
     {   
         //Update the location of the obstacles 
-        game_info->obstacle.x -= 1;
-        if (game_info->obstacle.x < 0)
+        if (game_info->obstacle.x -1 < 0)
         {
             game_info->current_score++;
             game_info->obstacle.x = 20;
+        }else
+        {
+            game_info->obstacle.x -= 1;
         }
+        
 
         //Finish the game if player hits an obstacle
         if (game_info->obstacle.x == game_info->player_location.x && game_info->obstacle.y == game_info->player_location.y)
         {
             game_stop();
+            break;
         }
         
         lcd_write_game(game_info);
         vTaskDelay((1000 / GAME_TICKS_PER_SECOND) / portTICK_RATE_MS);
-    }
+    }while (game_is_running);
+    
 
     //Delete this task once the game has ended
-    menu_next();
     vTaskDelete(NULL);
 }
